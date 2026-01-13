@@ -1,0 +1,33 @@
+version: "3.7"
+
+services:
+  ts-portainer:
+    image: tailscale/tailscale:latest
+    hostname: portainer_rajib
+    environment:
+      - TS_AUTHKEY=tskey-auth-*******
+      - TS_STATE_DIR=/var/lib/tailscale
+    volumes:
+      - tailscale-data-portainer:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    restart: unless-stopped
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    depends_on:
+      - ts-portainer
+    network_mode: service:ts-portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+    command: --host=unix:///var/run/docker.sock
+    restart: unless-stopped
+
+volumes:
+  tailscale-data-portainer:
+  portainer-data:
+
